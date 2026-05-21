@@ -1,6 +1,8 @@
-# 🏦 FinSight — Agentic Financial Research Assistant
+# AGENTIC_RAG
 
 > A multi-agent AI system that answers complex financial queries by intelligently orchestrating a RAG pipeline, live stock market data, and real-time web search — all in parallel.
+
+> NOTE : This is just a learning project, where I was exploring how to build things with LangGraph, LangChain and LangSmith.
 
 ---
 
@@ -58,7 +60,7 @@ User Query
 | Layer | Technology |
 |---|---|
 | Graph Orchestration | [LangGraph](https://github.com/langchain-ai/langgraph) |
-| LLM Provider | Google Gemini / Groq (pluggable via `agent/core/model.py`) |
+| LLM Provider | [OpenRouter](https://openrouter.ai) via `langchain-openrouter` (pluggable via `agent/core/model.py`) |
 | Vector Database | FAISS + `langchain-community` |
 | Embeddings | `BAAI/bge-small-en-v1.5` via `langchain-huggingface` |
 | Stock Data | `yfinance` |
@@ -124,30 +126,31 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-# Required: Choose one LLM provider
-GOOGLE_API_KEY=your_gemini_api_key      # Recommended
-GROQ_API_KEY=your_groq_api_key          # Alternative
+# LLM Provider
+OPENROUTER_API_KEY=your_openrouter_api_key
 
-# Required: Web Search
+# Web Search
 TAVILY_API_KEY=your_tavily_api_key
 ```
 
-> 💡 Get a **free Gemini API key** at [Google AI Studio](https://aistudio.google.com/) — no credit card required.  
+> 💡 Get a **free OpenRouter API key** at [openrouter.ai/keys](https://openrouter.ai/keys) — access hundreds of free and paid models with a single key.  
 > 💡 Get a **free Tavily API key** at [tavily.com](https://tavily.com).
 
 ### 3. Configure your LLM (`agent/core/model.py`)
 
-**Google Gemini (Recommended):**
+This project uses **[OpenRouter](https://openrouter.ai)** — a unified API that gives you access to hundreds of models (free & paid) with a single key.
+
 ```python
-from langchain_google_genai import ChatGoogleGenerativeAI
-model = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=os.getenv("GOOGLE_API_KEY"), temperature=0)
+from langchain_openrouter import ChatOpenRouter
+import os
+
+model = ChatOpenRouter(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    model="nvidia/nemotron-3-super-120b-a12b:free",  # swap any OpenRouter model here
+)
 ```
 
-**Groq:**
-```python
-from langchain_groq import ChatGroq
-model = ChatGroq(api_key=os.getenv("GROQ_API_KEY"), model="gemma2-9b-it")
-```
+> 💡 Browse all available models at [openrouter.ai/models](https://openrouter.ai/models). Free models are marked with `:free`.
 
 ### 4. Run
 
@@ -224,7 +227,8 @@ python draw_graph.py
 ## ⚠️ Known Limitations
 
 - The RAG knowledge base is scoped to the **Wells Fargo 2025 Annual Report** only
-- Groq-hosted **Llama 3** models have a known XML parser bug with complex structured outputs — use **Gemma 2** or **Mixtral** on Groq, or switch to **Google Gemini** for best stability
+- Groq-hosted Llama 3 models have a known XML parser bug with complex structured outputs
+- Free models on OpenRouter may have inconsistent tool-calling support — if you see structured output errors, try a more capable model (e.g. `google/gemini-flash-1.5` or `mistralai/mixtral-8x7b-instruct`) via OpenRouter
 - The system runs **without persistent memory** — each query starts with a fresh state
 
 ---

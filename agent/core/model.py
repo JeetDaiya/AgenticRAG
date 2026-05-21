@@ -1,7 +1,6 @@
-from langchain_groq import ChatGroq
+from langchain_openrouter import ChatOpenRouter
 from dotenv import load_dotenv
 import os
-from langchain_openrouter import ChatOpenRouter
 
 load_dotenv()
 
